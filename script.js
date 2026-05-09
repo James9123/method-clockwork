@@ -265,7 +265,7 @@ function drawHelicalGear(ctx, r, numTeeth, color) {
 }
 
 function drawBevelGear(ctx, r, numTeeth, color) {
-    // Bevel gear - slightly conical appearance with tapered teeth
+    // Bevel gear - slightly conical appearance
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.78, 0, Math.PI * 2);
@@ -274,8 +274,6 @@ function drawBevelGear(ctx, r, numTeeth, color) {
     const toothAngle = (Math.PI * 2) / numTeeth;
     const addendum = r * 0.20;
     const dedendum = r * 0.26;
-    const toothWidth = toothAngle * 0.42;
-    const rootTaper = 0.55; // narrower at root for conical look
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -285,10 +283,10 @@ function drawBevelGear(ctx, r, numTeeth, color) {
 
         // Tapered tooth (narrower at root)
         ctx.beginPath();
-        ctx.moveTo((r - dedendum) * rootTaper * Math.sin(-toothWidth/2), (r - dedendum) * rootTaper * Math.cos(-toothWidth/2));
-        ctx.lineTo((r + addendum) * Math.sin(-toothWidth * 0.08), (r + addendum) * Math.cos(-toothWidth * 0.08));
-        ctx.lineTo((r + addendum) * Math.sin(toothWidth * 0.08), (r + addendum) * Math.cos(toothWidth * 0.08));
-        ctx.lineTo((r - dedendum) * rootTaper * Math.sin(toothWidth/2), (r - dedendum) * rootTaper * Math.cos(toothWidth/2));
+        ctx.moveTo((r - dedendum) * 0.6 * Math.sin(-0.12), (r - dedendum) * 0.6 * Math.cos(-0.12));
+        ctx.lineTo((r + addendum) * Math.sin(-0.10), (r + addendum) * Math.cos(-0.10));
+        ctx.lineTo((r + addendum) * Math.sin(0.10), (r + addendum) * Math.cos(0.10));
+        ctx.lineTo((r - dedendum) * 0.6 * Math.sin(0.12), (r - dedendum) * 0.6 * Math.cos(0.12));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -345,8 +343,6 @@ function drawMiterGear(ctx, r, numTeeth, color) {
     const toothAngle = (Math.PI * 2) / numTeeth;
     const addendum = r * 0.16;
     const dedendum = r * 0.24;
-    const toothWidth = toothAngle * 0.45; // slightly wider teeth for miter look
-    const rootTaper = 0.58;
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -354,12 +350,12 @@ function drawMiterGear(ctx, r, numTeeth, color) {
         ctx.save();
         ctx.rotate(rot);
 
-        // Shorter, wider teeth typical of miter gears (tapered)
+        // Shorter, wider teeth typical of miter gears
         ctx.beginPath();
-        ctx.moveTo((r - dedendum) * rootTaper * Math.sin(-toothWidth/2), (r - dedendum) * rootTaper * Math.cos(-toothWidth/2));
-        ctx.lineTo((r + addendum) * Math.sin(-toothWidth * 0.06), (r + addendum) * Math.cos(-toothWidth * 0.06));
-        ctx.lineTo((r + addendum) * Math.sin(toothWidth * 0.06), (r + addendum) * Math.cos(toothWidth * 0.06));
-        ctx.lineTo((r - dedendum) * rootTaper * Math.sin(toothWidth/2), (r - dedendum) * rootTaper * Math.cos(toothWidth/2));
+        ctx.moveTo((r - dedendum) * 0.55 * Math.sin(-0.14), (r - dedendum) * 0.55 * Math.cos(-0.14));
+        ctx.lineTo((r + addendum) * Math.sin(-0.12), (r + addendum) * Math.cos(-0.12));
+        ctx.lineTo((r + addendum) * Math.sin(0.12), (r + addendum) * Math.cos(0.12));
+        ctx.lineTo((r - dedendum) * 0.55 * Math.sin(0.14), (r - dedendum) * 0.55 * Math.cos(0.14));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -410,26 +406,26 @@ function drawScrewGear(ctx, r, numTeeth, color) {
 }
 
 function drawInternalGear(ctx, r, numTeeth, color) {
-    // Internal gear: teeth cut on the INSIDE of a thick ring, pointing toward the center.
-    const outerR = r * 1.22;      // Outer edge of the ring body
-    const ringInnerR = r * 0.78;  // Inner wall of the ring (where teeth start)
-    const toothTipR = r * 0.58;   // How far the teeth extend inward (toward center)
+    // Internal gear: teeth on the inside of a ring (for planetary-like visuals)
+    const outerR = r * 1.18;
+    const innerR = r * 0.72;
 
-    // 1. Draw the solid ring body (outer circle)
+    // Outer ring (filled)
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Cut out the central hole (light background)
+    // Inner cutout (hole where pinion would sit)
     ctx.fillStyle = "#f0f2f8";
     ctx.beginPath();
-    ctx.arc(0, 0, ringInnerR - 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, innerR, 0, Math.PI * 2);
     ctx.fill();
 
-    // 3. Draw the inward-pointing teeth (on top of the ring)
+    // Internal teeth pointing inward
     const toothAngle = (Math.PI * 2) / numTeeth;
-    const toothWidth = toothAngle * 0.38; // Slightly narrower teeth for internal mesh look
+    const toothDepth = (outerR - innerR) * 0.6;
+    const toothWidth = toothAngle * 0.42;
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -438,31 +434,21 @@ function drawInternalGear(ctx, r, numTeeth, color) {
         ctx.rotate(rot);
 
         ctx.beginPath();
-        // Base of tooth (attached to inner wall of ring)
-        ctx.moveTo(ringInnerR * Math.sin(-toothWidth / 2), ringInnerR * Math.cos(-toothWidth / 2));
-        // Left flank going inward
-        ctx.lineTo(toothTipR * Math.sin(-toothWidth * 0.22), toothTipR * Math.cos(-toothWidth * 0.22));
-        // Tip of tooth
-        ctx.lineTo(toothTipR * Math.sin( toothWidth * 0.22), toothTipR * Math.cos( toothWidth * 0.22));
-        // Right flank back to base
-        ctx.lineTo(ringInnerR * Math.sin( toothWidth / 2), ringInnerR * Math.cos( toothWidth / 2));
+        // Tooth pointing inward
+        ctx.moveTo((innerR + toothDepth) * Math.sin(-toothWidth/2), (innerR + toothDepth) * Math.cos(-toothWidth/2));
+        ctx.lineTo(innerR * Math.sin(-toothWidth * 0.3), innerR * Math.cos(-toothWidth * 0.3));
+        ctx.lineTo(innerR * Math.sin(toothWidth * 0.3), innerR * Math.cos(toothWidth * 0.3));
+        ctx.lineTo((innerR + toothDepth) * Math.sin(toothWidth/2), (innerR + toothDepth) * Math.cos(toothWidth/2));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
     }
 
-    // 4. Subtle outer rim highlight
-    ctx.strokeStyle = "rgba(0,0,0,0.25)";
-    ctx.lineWidth = 3;
+    // Subtle outer rim
+    ctx.strokeStyle = "rgba(0,0,0,0.2)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Optional inner rim (clean edge where teeth meet the ring wall)
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, ringInnerR, 0, Math.PI * 2);
     ctx.stroke();
 }
 
@@ -783,7 +769,6 @@ class Clockwork {
                 key: gdata.key,
                 label: gdata.key.substring(0, 6),
                 layer: gdata.layer,
-                type: gdata.type || "spur",
                 beta: gdata.beta || 0,
                 angle: gdata.beta || 0,
                 omega: 0,
@@ -1006,6 +991,88 @@ class Clockwork {
 }
 
 // ==================== BOOTSTRAP ====================
+
+// ==================== DESIGNER'S NOTE POPUP ====================
+let designerNoteShown = localStorage.getItem('designerNoteShown') === 'true';
+
+function createDesignerNoteModal() {
+    if (document.getElementById('designerNoteModal')) return;
+
+    const modalHTML = `
+    <div id="designerNoteModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity 0.3s ease;">
+        <div style="background: white; max-width: 620px; width: 90%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); padding: 28px 32px; position: relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <button onclick="closeDesignerNoteModal()" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #666; line-height: 1;">×</button>
+            
+            <h2 style="margin: 0 0 20px 0; font-size: 22px; color: #222; text-align: center;">Designer's Note</h2>
+            
+            <div style="line-height: 1.65; font-size: 15.2px; color: #333; max-height: 420px; overflow-y: auto; padding-right: 8px;">
+                ${`The organizing metaphor for this artifact is a clockwork mechanism. Just as the precise meshing of gears, springs, and hands in a clock produces accurate time, the thoughtful interconnection of design methods generates reliable, innovative outcomes. Each gear in the visualization represents a distinct method whose unique mechanical character, whether direct like a spur or gradual like a helical, determines how it engages with and influences others. Their collective motion, ratios, and timing illustrate how early observations propel framing, ideation feeds specification, and evaluation loops back insights. The central clock embodies the iterative final result of design work.
+Overall, when methods align and drive one another effectively, the result goes from non-functioning and chaos to clarity: a clear, measured “tick” of progress, validated decisions, and effective conclusions. This visualization is about that concept.`}
+            </div>
+            
+            <div style="text-align: center; margin-top: 24px;">
+                <button onclick="closeDesignerNoteModal()" style="background: #5088d0; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600;">Got it — Start Exploring</button>
+            </div>
+        </div>
+    </div>`;
+
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer.firstElementChild);
+
+    // Fade in
+    setTimeout(() => {
+        const modal = document.getElementById('designerNoteModal');
+        if (modal) modal.style.opacity = '1';
+    }, 10);
+
+    // Click outside to close
+    const modal = document.getElementById('designerNoteModal');
+    modal.addEventListener('click', (e) => {
+        if (e.target.id === 'designerNoteModal') closeDesignerNoteModal();
+    });
+}
+
+function closeDesignerNoteModal() {
+    const modal = document.getElementById('designerNoteModal');
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+        }, 300);
+    }
+    localStorage.setItem('designerNoteShown', 'true');
+}
+
+function showDesignerNote() {
+    createDesignerNoteModal();
+}
+
+// Add reopen button to STATUS panel (called after Clockwork init)
+function addReopenButton() {
+    const statusPanel = document.querySelector('.sidebar.right .panel:last-child');
+    if (!statusPanel) return;
+    
+    const reopenBtn = document.createElement('button');
+    reopenBtn.textContent = '📖 Designer\'s Note';
+    reopenBtn.style.cssText = 'margin-top: 12px; width: 100%; padding: 10px; background: white; border: 1px solid #d0d5df; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #222;';
+    reopenBtn.addEventListener('click', showDesignerNote);
+    reopenBtn.addEventListener('mouseover', () => reopenBtn.style.background = '#e8f0fe');
+    reopenBtn.addEventListener('mouseout', () => reopenBtn.style.background = 'white');
+    statusPanel.appendChild(reopenBtn);
+}
+
+// Auto-show popup once on first load
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!designerNoteShown) {
+            createDesignerNoteModal();
+            designerNoteShown = true;
+        }
+    }, 800);
+});
+
+
 window.addEventListener("load", () => {
     const canvas = document.getElementById("canvas");
     const cw = new Clockwork(canvas);
@@ -1018,48 +1085,64 @@ window.addEventListener("load", () => {
 
     console.log("%c[Clockwork] Browser version initialized successfully", "color:#888");
 
-    // ==================== ONE-TIME WELCOME POPUP ====================
-    const modal = document.getElementById('welcomeModal');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const gotItBtn = document.getElementById('gotItBtn');
+    // Create Designer's Note Modal
+    const modalHTML = `
+<div id="designersNoteModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: white; max-width: 540px; width: 92%; border-radius: 12px; box-shadow: 25px 25px 50px -12px rgb(0 0 0 / 0.25); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;">
+    <div style="padding: 20px 24px 12px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+      <h2 style="margin: 0; font-size: 23px; font-weight: 600; color: #222;">Designer's Note</h2>
+      <button id="modalCloseX" style="background: none; border: none; font-size: 32px; line-height: 1; color: #999; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">×</button>
+    </div>
+    <div style="padding: 24px 28px; font-size: 15.1px; line-height: 1.68; color: #333; overflow-y: auto; flex: 1;">
+      <p>The organizing metaphor for this artifact is a clockwork mechanism. Just as the precise meshing of gears, springs, and hands in a clock produces accurate time, the thoughtful interconnection of design methods generates reliable, innovative outcomes. Each gear in the visualization represents a distinct method whose unique mechanical character, whether direct like a spur or gradual like a helical, determines how it engages with and influences others. Their collective motion, ratios, and timing illustrate how early observations propel framing, ideation feeds specification, and evaluation loops back insights. The central clock embodies the iterative final result of design work.</p>
+      <p style="margin-top: 18px;">Overall, when methods align and drive one another effectively, the result goes from non-functioning and chaos to clarity: a clear, measured “tick” of progress, validated decisions, and effective conclusions. This visualization is about that concept.</p>
+    </div>
+    <div style="padding: 20px 28px; background: #f8f9fc; border-top: 1px solid #e5e7eb; text-align: right; flex-shrink: 0;">
+      <button id="modalGotIt" style="background: #5088d0; color: white; border: none; padding: 13px 32px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">Got it — Start Exploring</button>
+    </div>
+  </div>
+</div>`;
+    
+    // Inject modal
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer.firstElementChild);
 
-    function showWelcomeModal() {
-        if (modal && !localStorage.getItem('designMethodsClockworkWelcomeShown')) {
-            // Slight delay so the visualization initializes visibly first
-            setTimeout(() => {
-                modal.style.display = 'flex';
-            }, 650);
-        }
+    const modal = document.getElementById('designersNoteModal');
+    
+    function showModal() {
+        modal.style.display = 'flex';
     }
-
-    function closeWelcomeModal() {
-        if (modal) modal.style.display = 'none';
-        localStorage.setItem('designMethodsClockworkWelcomeShown', 'true');
-    }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeWelcomeModal);
-    }
-    if (gotItBtn) {
-        gotItBtn.addEventListener('click', closeWelcomeModal);
-    }
-    // Close when clicking the dark overlay background
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeWelcomeModal();
-            }
-        });
-    }
-
-    // Wire up the "Reopen Welcome Guide" button under the STATUS panel (always allows re-opening)
-    const showWelcomeBtn = document.getElementById('showWelcomeBtn');
-    if (showWelcomeBtn && modal) {
-        showWelcomeBtn.addEventListener('click', () => {
-            modal.style.display = 'flex';
-        });
+    
+    function hideModal() {
+        modal.style.display = 'none';
     }
 
-    // Trigger the one-time popup (only shows automatically on first visit)
-    showWelcomeModal();
+    // Close buttons
+    document.getElementById('modalCloseX').addEventListener('click', hideModal);
+    document.getElementById('modalGotIt').addEventListener('click', hideModal);
+    
+    // Click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) hideModal();
+    });
+
+    // Show on first load
+    if (!localStorage.getItem('designersNoteSeen')) {
+        setTimeout(() => {
+            showModal();
+            localStorage.setItem('designersNoteSeen', 'true');
+        }, 800);
+    }
+
+    // Reopen button
+    const showNoteBtn = document.getElementById('showNoteBtn');
+    if (showNoteBtn) {
+        showNoteBtn.addEventListener('click', showModal);
+    }
+
+
 });
+
+
+// ==================== DESIGNER'S NOTE POPUP ====================
