@@ -1014,7 +1014,7 @@ Overall, when methods align and drive one another effectively, the result goes f
                 <button onclick="closeDesignerNoteModal()" style="background: #5088d0; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600;">Got it — Start Exploring</button>
             </div>
         </div>
-    </div>`;
+    </div>`; 
 
     const modalContainer = document.createElement('div');
     modalContainer.innerHTML = modalHTML;
