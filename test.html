@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gear Types • Accurate Visualizations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        .gear-container { transition: transform 0.2s ease; }
+        .gear-container:hover { transform: scale(1.02); }
+        .gear-svg { filter: drop-shadow(0 10px 25px rgb(234 179 8 / 0.2)); }
+        
+        .card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        .animate-spin-slow { animation: spin-slow 18s linear infinite; }
+        
+        @keyframes rack-move {
+            0%, 100% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+        }
+        
+        .tooth { transition: fill 0.2s ease; }
+        .card:hover .tooth { fill: #fcd34d; }
+        
+        .section-label { font-size: 10px; letter-spacing: 1px; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+    <div id="gear-visualizer" class="min-h-screen"></div>
+
+    <script>
+
+
+function initGearVisualizer(containerId = 'gear-visualizer') {
+    const root = document.getElementById(containerId);
+    if (!root) {
+        console.error(`Container with id="${containerId}" not found.`);
+        return;
+    }
+
+    // Inject custom CSS
+    injectCustomStyles();
+
+    // Build the complete UI
+    root.innerHTML = `
+        <div class="max-w-7xl mx-auto px-8 py-12">
+            
+            <!-- HEADER -->
+            <div class="flex flex-col items-center text-center mb-14">
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <div class="w-16 h-16">
+                        <svg width="64" height="64" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="78" stroke="#eab308" stroke-width="18"/>
+                            <g transform="translate(100 100)">
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(0)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(30)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(60)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(90)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(120)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(150)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(180)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(210)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(240)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(270)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(300)" fill="#eab308"/>
+                                <rect x="-10" y="-91" width="20" height="32" rx="2" transform="rotate(330)" fill="#eab308"/>
+                            </g>
+                            <circle cx="100" cy="100" r="50" fill="#18181b" stroke="#eab308" stroke-width="14"/>
+                            <circle cx="100" cy="100" r="22" fill="#27272a"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-6xl font-semibold tracking-[-2.5px]" style="font-family: 'Space Grotesk', sans-serif;">Gear Types</h1>
+                        <p class="text-amber-400 text-sm font-medium tracking-[3px] mt-1">ACCURATE VISUALIZATIONS</p>
+                    </div>
+                </div>
+                <p class="max-w-xl text-zinc-400 text-lg">Stylized but distinct SVG illustrations for each gear type.<br>Hover cards to speed up animations. Different tooth profiles, shapes &amp; assemblies.</p>
+            </div>
+
+            <!-- GRID -->
+            <div id="gears-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+                <!-- Populated by JS -->
+            </div>
+            
+            <div class="mt-10 text-center text-xs text-zinc-500">
+                These are educational illustrations. Real gears use involute tooth profiles generated by dedicated tools like 
+                <a href="https://geargenerator.com/" target="_blank" class="underline hover:text-amber-400">GearGenerator.com</a> or 
+                <a href="https://geargenerator.pro/" target="_blank" class="underline hover:text-amber-400">GearGenerator.pro</a>.
+            </div>
+        </div>
+    `;
+
+    // Initialize everything
+    populateGrid();
+    addInteractiveAnimations();
+    addClickSpeedupEffect();
+
+    console.log('%c[Gear Demo] JavaScript visualizer initialized successfully.', 'color:#854d0e');
+}
+
+// ============ CUSTOM STYLES ============
+function injectCustomStyles() {
+    if (document.getElementById('gear-visualizer-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'gear-visualizer-styles';
+    style.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap');
+
+        .gear-container {
+            transition: transform 0.2s ease;
+        }
+        
+        .gear-container:hover {
+            transform: scale(1.02);
+        }
+        
+        .gear-svg {
+            filter: drop-shadow(0 10px 25px rgb(234 179 8 / 0.2));
+        }
+        
+        .card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes spin-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        
+        .animate-spin-slow {
+            animation: spin-slow 18s linear infinite;
+        }
+        
+        .animate-spin-reverse {
+            animation: spin-reverse 22s linear infinite;
+        }
+
+        .rack-animate {
+            animation: rack-move 4s ease-in-out infinite;
+        }
+
+        @keyframes rack-move {
+            0%, 100% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+        }
+
+        .tooth {
+            transition: fill 0.2s ease;
+        }
+        
+        .card:hover .tooth {
+            fill: #fcd34d;
+        }
+        
+        .section-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ============ DATA ============
+const gearsData = [
+    {
+        id: 'spur',
+        name: "Spur Gears",
+        desc: "Cylindrical gears with straight teeth parallel to the shaft axis; used for parallel shafts and high-accuracy applications like clocks and simple conveyors.",
+        type: 'spur',
+        teeth: 20,
+        color: '#eab308',
+        speed: 16,
+        shaft: "Parallel shafts • Straight teeth"
+    },
+    {
+        id: 'helical',
+        name: "Helical Gears",
+        desc: "Cylindrical gears with angled teeth that engage gradually; ideal for parallel shafts, offering smoother, quieter operation and higher load capacity than spur gears.",
+        type: 'helical',
+        teeth: 24,
+        color: '#f59e0b',
+        speed: 14,
+        helixAngle: 22,
+        shaft: "Parallel shafts • Angled teeth"
+    },
+    {
+        id: 'bevel',
+        name: "Bevel Gears",
+        desc: "Cone-shaped gears used to transmit motion between intersecting shafts (often at 90 degrees); includes straight, spiral, and hypoid varieties for applications like vehicle differentials.",
+        type: 'bevel',
+        teeth: 18,
+        color: '#d97706',
+        speed: 19,
+        shaft: "Intersecting shafts • Tapered teeth"
+    },
+    {
+        id: 'worm',
+        name: "Worm Gears",
+        desc: "Consist of a screw-like worm and a mating wheel for non-intersecting shafts; provide high torque reduction in compact spaces and often feature self-locking capabilities for elevators and lifts.",
+        type: 'worm',
+        teeth: 28,
+        color: '#b45309',
+        speed: 12,
+        shaft: "Non-intersecting shafts • High reduction"
+    },
+    {
+        id: 'rack',
+        name: "Rack and Pinion",
+        desc: "A flat gear rack meshing with a cylindrical pinion to convert rotational motion into linear motion, commonly used in vehicle steering systems and weighing scales.",
+        type: 'rack',
+        teeth: 12,
+        color: '#854d0e',
+        speed: 15,
+        shaft: "Rotary ↔ Linear motion"
+    },
+    {
+        id: 'internal',
+        name: "Internal Gears",
+        desc: "Have teeth cut on the inside of a cylinder or cone, pairing with external gears in planetary gear drives and couplings.",
+        type: 'internal',
+        teeth: 36,
+        color: '#ca8a04',
+        speed: 25,
+        shaft: "Parallel shafts • Ring + Pinion"
+    },
+    {
+        id: 'screw',
+        name: "Screw Gears (Crossed Helical)",
+        desc: "Also known as crossed helical gears, these use non-intersecting, non-parallel shafts for small power transmission with point contact.",
+        type: 'screw',
+        teeth: 16,
+        color: '#f59e0b',
+        speed: 17,
+        shaft: "Crossed non-parallel shafts"
+    },
+    {
+        id: 'miter',
+        name: "Miter Gears",
+        desc: "A specific type of bevel gear with a 1:1 speed ratio used to change the direction of power transmission without altering speed.",
+        type: 'miter',
+        teeth: 20,
+        color: '#d97706',
+        speed: 21,
+        shaft: "Intersecting shafts @ 90° • 1:1 ratio"
+    }
+];
+
+// ============ SVG GENERATORS ============
+
+function createSpurSVG(teeth, color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="62" fill="#18181b" stroke="${color}" stroke-width="13"/>`;
+    
+    const toothH = 26;
+    const toothW = 15;
+    for (let i = 0; i < teeth; i++) {
+        const angle = i * (360 / teeth);
+        svg += `<g transform="rotate(${angle} ${cx} ${cy})">
+            <rect x="${cx + 62 - 2}" y="${cy - toothW/2}" width="${toothH}" height="${toothW}" rx="2.5" fill="${color}" class="tooth"/>
+        </g>`;
+    }
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="28" fill="#27272a" stroke="${color}" stroke-width="7"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="11" fill="#18181b"/>`;
+    svg += `</svg>`;
+    return svg;
+}
+
+function createHelicalSVG(teeth, color, helixAngle = 20, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    const rRoot = 58;
+    const rTip = 82;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rRoot}" fill="#18181b" stroke="${color}" stroke-width="10"/>`;
+    
+    const toothHeight = rTip - rRoot;
+    const toothAngularWidth = 360 / teeth * 0.38;
+    const helixRad = helixAngle * Math.PI / 180;
+    const tangentialShift = Math.tan(helixRad) * toothHeight * 0.75;
+    
+    for (let i = 0; i < teeth; i++) {
+        const baseAngle = i * (360 / teeth) * Math.PI / 180;
+        
+        const x1 = cx + rRoot * Math.cos(baseAngle);
+        const y1 = cy + rRoot * Math.sin(baseAngle);
+        const x2 = cx + rRoot * Math.cos(baseAngle + toothAngularWidth * Math.PI / 180);
+        const y2 = cy + rRoot * Math.sin(baseAngle + toothAngularWidth * Math.PI / 180);
+        
+        const tipAngleRight = baseAngle + toothAngularWidth * Math.PI / 180 + tangentialShift / rTip;
+        const x3 = cx + rTip * Math.cos(tipAngleRight);
+        const y3 = cy + rTip * Math.sin(tipAngleRight);
+        
+        const tipAngleLeft = baseAngle + tangentialShift / rTip;
+        const x4 = cx + rTip * Math.cos(tipAngleLeft);
+        const y4 = cy + rTip * Math.sin(tipAngleLeft);
+        
+        svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${color}" class="tooth"/>`;
+    }
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="26" fill="#27272a" stroke="${color}" stroke-width="7"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="10" fill="#18181b"/>`;
+    svg += `</svg>`;
+    return svg;
+}
+
+function createBevelSVG(teeth, color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    const rOuter = 78;
+    const rInner = 42;
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="#18181b" stroke="${color}" stroke-width="4"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="#27272a" stroke="${color}" stroke-width="3"/>`;
+    
+    const toothHeight = 22;
+    const toothWidthOuter = 13;
+    const toothWidthInner = 7;
+    
+    for (let i = 0; i < teeth; i++) {
+        const angle = i * (360 / teeth);
+        const rad = angle * Math.PI / 180;
+        const radNext = (angle + (360 / teeth) * 0.42) * Math.PI / 180;
+        
+        const x1 = cx + rOuter * Math.cos(rad);
+        const y1 = cy + rOuter * Math.sin(rad);
+        const x2 = cx + rOuter * Math.cos(radNext);
+        const y2 = cy + rOuter * Math.sin(radNext);
+        const x3 = cx + rInner * Math.cos(radNext);
+        const y3 = cy + rInner * Math.sin(radNext);
+        const x4 = cx + rInner * Math.cos(rad);
+        const y4 = cy + rInner * Math.sin(rad);
+        
+        svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${color}" class="tooth"/>`;
+    }
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="18" fill="#18181b" stroke="${color}" stroke-width="5"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="7" fill="#27272a"/>`;
+    
+    for (let i = 0; i < 8; i++) {
+        const a = i * 45;
+        svg += `<line x1="${cx}" y1="${cy}" x2="${cx + 55 * Math.cos(a * Math.PI/180)}" y2="${cy + 55 * Math.sin(a * Math.PI/180)}" 
+                stroke="${color}" stroke-width="1.5" stroke-opacity="0.3"/>`;
+    }
+    svg += `</svg>`;
+    return svg;
+}
+
+function createInternalSVG(ringTeeth, color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="85" fill="${color}" stroke="#44403c" stroke-width="8"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="70" fill="#18181b"/>`;
+    
+    const rPitch = 68;
+    const toothH = 14;
+    
+    for (let i = 0; i < ringTeeth; i++) {
+        const angle = i * (360 / ringTeeth) * Math.PI / 180;
+        const baseLeft  = cx + rPitch * Math.cos(angle - 0.08);
+        const baseRight = cx + rPitch * Math.cos(angle + 0.08);
+        const baseYLeft = cy + rPitch * Math.sin(angle - 0.08);
+        const baseYRight = cy + rPitch * Math.sin(angle + 0.08);
+        const tipX = cx + (rPitch - toothH) * Math.cos(angle);
+        const tipY = cy + (rPitch - toothH) * Math.sin(angle);
+        
+        svg += `<polygon points="${baseLeft},${baseYLeft} ${baseRight},${baseYRight} ${tipX},${tipY}" fill="${color}" class="tooth"/>`;
+    }
+    
+    svg += `</svg>`;
+    return svg;
+}
+
+function createWormSVG(color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    // Worm wheel
+    svg += `<g class="worm-wheel" transform="translate(128 100)">`;
+    svg += `<circle cx="0" cy="0" r="46" fill="#18181b" stroke="${color}" stroke-width="10"/>`;
+    
+    const wheelTeeth = 22;
+    const wRRoot = 24;
+    const wRTip = 46;
+    const wToothAng = 360 / wheelTeeth * 0.36;
+    const wHelixShift = 7;
+    
+    for (let i = 0; i < wheelTeeth; i++) {
+        const baseAngle = i * (360 / wheelTeeth) * Math.PI / 180;
+        const x1 = wRRoot * Math.cos(baseAngle);
+        const y1 = wRRoot * Math.sin(baseAngle);
+        const x2 = wRRoot * Math.cos(baseAngle + wToothAng * Math.PI / 180);
+        const y2 = wRRoot * Math.sin(baseAngle + wToothAng * Math.PI / 180);
+        const x3 = wRTip * Math.cos(baseAngle + wToothAng * Math.PI / 180 + wHelixShift / wRTip);
+        const y3 = wRTip * Math.sin(baseAngle + wToothAng * Math.PI / 180 + wHelixShift / wRTip);
+        const x4 = wRTip * Math.cos(baseAngle + wHelixShift / wRTip);
+        const y4 = wRTip * Math.sin(baseAngle + wHelixShift / wRTip);
+        
+        svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${color}" class="tooth"/>`;
+    }
+    svg += `<circle cx="0" cy="0" r="20" fill="#27272a" stroke="${color}" stroke-width="5"/>`;
+    svg += `<circle cx="0" cy="0" r="7" fill="#18181b"/>`;
+    svg += `</g>`;
+    
+    // Worm body
+    svg += `<rect x="18" y="72" width="72" height="56" rx="8" fill="#27272a" stroke="${color}" stroke-width="8"/>`;
+    svg += `<rect x="22" y="76" width="64" height="48" rx="5" fill="#18181b"/>`;
+    
+    for (let t = 0; t < 5; t++) {
+        const yOff = 78 + t * 9.5;
+        svg += `<path d="M 25 ${yOff} Q 45 ${yOff - 6} 55 ${yOff} Q 70 ${yOff + 6} 82 ${yOff}" 
+                fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>`;
+        svg += `<path d="M 25 ${yOff + 4.5} Q 45 ${yOff - 1.5} 55 ${yOff + 4.5} Q 70 ${yOff + 10.5} 82 ${yOff + 4.5}" 
+                fill="none" stroke="${color}" stroke-width="2.5" stroke-opacity="0.6"/>`;
+    }
+    
+    svg += `<circle cx="25" cy="100" r="12" fill="#27272a" stroke="${color}" stroke-width="5"/>`;
+    svg += `<circle cx="82" cy="100" r="12" fill="#27272a" stroke="${color}" stroke-width="5"/>`;
+    
+    svg += `</svg>`;
+    return svg;
+}
+
+function createRackPinionSVG(color, size = 170) {
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    // Pinion
+    const pcx = 95, pcy = 78;
+    svg += `<g class="pinion-group">`;
+    svg += `<circle cx="${pcx}" cy="${pcy}" r="38" fill="#18181b" stroke="${color}" stroke-width="9"/>`;
+    
+    const pTeeth = 16;
+    for (let i = 0; i < pTeeth; i++) {
+        const angle = i * (360 / pTeeth);
+        svg += `<g transform="rotate(${angle} ${pcx} ${pcy})">`;
+        svg += `<rect x="${pcx + 38}" y="${pcy - 3.8}" width="7.5" height="7.6" fill="${color}" class="tooth"/>`;
+        svg += `<polygon points="${pcx + 45.5},${pcy - 3.3} ${pcx + 45.5},${pcy + 3.3} ${pcx + 55},${pcy}" fill="${color}" class="tooth"/>`;
+        svg += `</g>`;
+    }
+    svg += `<circle cx="${pcx}" cy="${pcy}" r="16" fill="#27272a" stroke="${color}" stroke-width="5"/>`;
+    svg += `<circle cx="${pcx}" cy="${pcy}" r="6" fill="#18181b"/>`;
+    svg += `</g>`;
+    
+    // Rack
+    svg += `<g class="rack-group">`;
+    svg += `<rect x="8" y="128" width="184" height="28" rx="4" fill="#27272a" stroke="${color}" stroke-width="6"/>`;
+    
+    const rackTeeth = 15;
+    const toothBaseW = 7.4;
+    const rootRectH = 6;
+    const triH = 15.5;
+    for (let i = 0; i < rackTeeth; i++) {
+        const tx = 17 + i * 11.9;
+        const tipX = tx + toothBaseW / 2;
+        svg += `<rect x="${tx}" y="${128 - rootRectH}" width="${toothBaseW}" height="${rootRectH}" fill="${color}" class="tooth"/>`;
+        svg += `<polygon points="${tx},${128 - rootRectH} ${tx + toothBaseW},${128 - rootRectH} ${tipX},${128 - rootRectH - triH}" fill="${color}" class="tooth"/>`;
+    }
+    svg += `</g>`;
+    
+    svg += `</svg>`;
+    return svg;
+}
+
+function createMiterSVG(teeth, color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    const rOuter = 72;
+    const rInner = 38;
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="#18181b" stroke="${color}" stroke-width="4"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="#27272a" stroke="${color}" stroke-width="3"/>`;
+    
+    const toothH = 20;
+    for (let i = 0; i < teeth; i++) {
+        const angle = i * (360 / teeth);
+        const rad = angle * Math.PI / 180;
+        const radNext = (angle + (360 / teeth) * 0.42) * Math.PI / 180;
+        
+        const x1 = cx + rOuter * Math.cos(rad);
+        const y1 = cy + rOuter * Math.sin(rad);
+        const x2 = cx + rOuter * Math.cos(radNext);
+        const y2 = cy + rOuter * Math.sin(radNext);
+        const x3 = cx + rInner * Math.cos(radNext);
+        const y3 = cy + rInner * Math.sin(radNext);
+        const x4 = cx + rInner * Math.cos(rad);
+        const y4 = cy + rInner * Math.sin(rad);
+        
+        svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${color}" class="tooth"/>`;
+    }
+    
+    svg += `<circle cx="${cx}" cy="${cy}" r="16" fill="#18181b" stroke="${color}" stroke-width="5"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="6" fill="#27272a"/>`;
+    
+    svg += `<g opacity="0.7">`;
+    svg += `<path d="M 155 55 L 175 75 L 155 95" fill="none" stroke="#eab308" stroke-width="4" stroke-linejoin="round"/>`;
+    svg += `<path d="M 55 155 L 75 175 L 95 155" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linejoin="round"/>`;
+    svg += `</g>`;
+    
+    svg += `<text x="100" y="185" fill="#eab308" font-size="12" text-anchor="middle" font-weight="500">1:1  •  90°</text>`;
+    
+    svg += `</svg>`;
+    return svg;
+}
+
+function createScrewSVG(teeth, color, size = 170) {
+    const cx = 100, cy = 100;
+    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-svg">`;
+    
+    const rRoot = 55;
+    const rTip = 78;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rRoot}" fill="#18181b" stroke="${color}" stroke-width="9"/>`;
+    
+    const mainTeeth = teeth;
+    const toothAngularWidth = 360 / mainTeeth * 0.36;
+    const helixShift = 9;
+    
+    for (let i = 0; i < mainTeeth; i++) {
+        const baseAngle = i * (360 / mainTeeth) * Math.PI / 180;
+        const x1 = cx + rRoot * Math.cos(baseAngle);
+        const y1 = cy + rRoot * Math.sin(baseAngle);
+        const x2 = cx + rRoot * Math.cos(baseAngle + toothAngularWidth * Math.PI / 180);
+        const y2 = cy + rRoot * Math.sin(baseAngle + toothAngularWidth * Math.PI / 180);
+        const x3 = cx + rTip * Math.cos(baseAngle + toothAngularWidth * Math.PI / 180 + helixShift / rTip);
+        const y3 = cy + rTip * Math.sin(baseAngle + toothAngularWidth * Math.PI / 180 + helixShift / rTip);
+        const x4 = cx + rTip * Math.cos(baseAngle + helixShift / rTip);
+        const y4 = cy + rTip * Math.sin(baseAngle + helixShift / rTip);
+        
+        svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${color}" class="tooth"/>`;
+    }
+    svg += `<circle cx="${cx}" cy="${cy}" r="24" fill="#27272a" stroke="${color}" stroke-width="6"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="9" fill="#18181b"/>`;
+    
+    for (let j = 0; j < 6; j++) {
+        svg += `<g transform="rotate(${j * 6} ${cx} ${cy})">
+            <line x1="${cx + 28}" y1="${cy - 20}" x2="${cx + 72}" y2="${cy + 18}" 
+                  stroke="${color}" stroke-width="2.2" stroke-opacity="0.35"/>
+        </g>`;
+    }
+    
+    // Side view of mating gear
+    const sRectX = 138;
+    const sRectY = 25;
+    const sRectW = 55;
+    const sRectH = 40;
+    svg += `<rect x="${sRectX}" y="${sRectY}" width="${sRectW}" height="${sRectH}" rx="5" fill="#27272a" stroke="${color}" stroke-width="5.5"/>`;
+    
+    for (let j = 0; j < 6; j++) {
+        const yOff = sRectY + 4 + j * 5.5;
+        svg += `<line x1="${sRectX + 3}" y1="${yOff}" x2="${sRectX + sRectW - 3}" y2="${yOff + 17}" 
+                stroke="${color}" stroke-width="2.3" stroke-opacity="0.75" stroke-linecap="round"/>`;
+    }
+    
+    for (let j = 0; j < 3; j++) {
+        const yOff = sRectY + 7 + j * 10;
+        svg += `<line x1="${sRectX + 3}" y1="${yOff}" x2="${sRectX + sRectW - 3}" y2="${yOff + 17}" 
+                stroke="${color}" stroke-width="1.6" stroke-opacity="0.35" stroke-linecap="round"/>`;
+    }
+    
+    svg += `<line x1="25" y1="100" x2="88" y2="100" stroke="#eab308" stroke-width="3.5" stroke-opacity="0.55"/>`;
+    svg += `<line x1="115" y1="38" x2="175" y2="115" stroke="#f59e0b" stroke-width="3.5" stroke-opacity="0.55"/>`;
+    
+    svg += `</svg>`;
+    return svg;
+}
+
+// ============ RENDERING ============
+
+function renderGearCard(gear) {
+    let visualHTML = '';
+    let extraClass = '';
+    
+    switch (gear.type) {
+        case 'spur':
+            visualHTML = createSpurSVG(gear.teeth, gear.color);
+            break;
+        case 'helical':
+            visualHTML = createHelicalSVG(gear.teeth, gear.color, gear.helixAngle);
+            break;
+        case 'bevel':
+            visualHTML = createBevelSVG(gear.teeth, gear.color);
+            break;
+        case 'internal':
+            visualHTML = createInternalSVG(gear.teeth, gear.color);
+            extraClass = 'internal-gear';
+            break;
+        case 'worm':
+            visualHTML = createWormSVG(gear.color);
+            break;
+        case 'rack':
+            visualHTML = createRackPinionSVG(gear.color);
+            extraClass = 'rack-pinion';
+            break;
+        case 'miter':
+            visualHTML = createMiterSVG(gear.teeth, gear.color);
+            break;
+        case 'screw':
+            visualHTML = createScrewSVG(gear.teeth, gear.color);
+            break;
+        default:
+            visualHTML = createSpurSVG(gear.teeth, gear.color);
+    }
+    
+    let animClass = `gear-container animate-spin-slow`;
+    if (gear.type === 'rack') animClass = `gear-container`;
+    
+    return `
+        <div class="card bg-zinc-900 border border-zinc-800 rounded-3xl p-7 flex flex-col items-center text-center h-full">
+            <div class="${animClass}" style="animation-duration: ${gear.speed}s; width: 170px; height: 170px;">
+                ${visualHTML}
+            </div>
+            
+            <div class="mt-5 mb-1">
+                <h2 class="text-2xl font-semibold text-amber-300">${gear.name}</h2>
+                <div class="section-label text-amber-400/70 mt-0.5">${gear.shaft}</div>
+            </div>
+            
+            <p class="text-zinc-400 text-[14.5px] leading-relaxed flex-1">${gear.desc}</p>
+            
+            ${gear.type === 'rack' || gear.type === 'internal' || gear.type === 'worm' ? 
+                `<div class="mt-3 text-[10px] text-zinc-500">Hover to interact • Motion shown</div>` : ''}
+        </div>
+    `;
+}
+
+function populateGrid() {
+    const grid = document.getElementById('gears-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    gearsData.forEach(gear => {
+        const cardHTML = renderGearCard(gear);
+        grid.innerHTML += cardHTML;
+    });
+}
+
+function addInteractiveAnimations() {
+    // Rack & Pinion hover effects
+    const rackCards = document.querySelectorAll('.rack-pinion');
+    rackCards.forEach(card => {
+        const pinion = card.querySelector('.pinion-group');
+        const rack = card.querySelector('.rack-group');
+        
+        if (pinion && rack) {
+            card.addEventListener('mouseenter', () => {
+                pinion.style.animation = 'spin-slow 3s linear infinite';
+                rack.style.animation = 'rack-move 2.8s ease-in-out infinite';
+            });
+            card.addEventListener('mouseleave', () => {
+                pinion.style.animation = '';
+                rack.style.animation = '';
+            });
+        }
+    });
+    
+    // Worm wheel hover effect
+    const wormCards = Array.from(document.querySelectorAll('.card')).filter(c => 
+        c.textContent.includes('Worm Gears')
+    );
+    wormCards.forEach(card => {
+        const wheelGroup = card.querySelector('.worm-wheel');
+        if (wheelGroup) {
+            card.addEventListener('mouseenter', () => {
+                wheelGroup.style.animation = 'spin-slow 2.5s linear infinite';
+                wheelGroup.style.transformOrigin = '0 0';
+            });
+            card.addEventListener('mouseleave', () => {
+                wheelGroup.style.animation = '';
+            });
+        }
+    });
+}
+
+function addClickSpeedupEffect() {
+    const grid = document.getElementById('gears-grid');
+    if (!grid) return;
+    
+    grid.addEventListener('click', function(e) {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        
+        const container = card.querySelector('.gear-container');
+        if (container) {
+            const origDuration = container.style.animationDuration;
+            container.style.animationDuration = '1.8s';
+            setTimeout(() => {
+                container.style.animationDuration = origDuration || '16s';
+            }, 1200);
+        }
+    });
+}
+
+// Auto-initialize if container exists on page load
+if (typeof window !== 'undefined') {
+    window.initGearVisualizer = initGearVisualizer;
+    
+    // Optional: auto-init if container with default ID exists
+    if (document.getElementById('gear-visualizer')) {
+        // Wait for Tailwind to be ready
+        setTimeout(() => {
+            if (document.getElementById('gear-visualizer')) {
+                initGearVisualizer('gear-visualizer');
+            }
+        }, 100);
+    }
+}
+            // To make this truly one-file ready, replace the comment above with the full JS code I gave you earlier.
+        // Auto-start when page loads
+        window.onload = initGearVisualizer;
+    </script>
+</body>
+</html>

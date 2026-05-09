@@ -265,7 +265,7 @@ function drawHelicalGear(ctx, r, numTeeth, color) {
 }
 
 function drawBevelGear(ctx, r, numTeeth, color) {
-    // Bevel gear - slightly conical appearance with tapered teeth
+    // Bevel gear - slightly conical appearance
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.78, 0, Math.PI * 2);
@@ -274,8 +274,6 @@ function drawBevelGear(ctx, r, numTeeth, color) {
     const toothAngle = (Math.PI * 2) / numTeeth;
     const addendum = r * 0.20;
     const dedendum = r * 0.26;
-    const toothWidth = toothAngle * 0.42;
-    const rootTaper = 0.55; // narrower at root for conical look
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -285,10 +283,10 @@ function drawBevelGear(ctx, r, numTeeth, color) {
 
         // Tapered tooth (narrower at root)
         ctx.beginPath();
-        ctx.moveTo((r - dedendum) * rootTaper * Math.sin(-toothWidth/2), (r - dedendum) * rootTaper * Math.cos(-toothWidth/2));
-        ctx.lineTo((r + addendum) * Math.sin(-toothWidth * 0.08), (r + addendum) * Math.cos(-toothWidth * 0.08));
-        ctx.lineTo((r + addendum) * Math.sin(toothWidth * 0.08), (r + addendum) * Math.cos(toothWidth * 0.08));
-        ctx.lineTo((r - dedendum) * rootTaper * Math.sin(toothWidth/2), (r - dedendum) * rootTaper * Math.cos(toothWidth/2));
+        ctx.moveTo((r - dedendum) * 0.6 * Math.sin(-0.12), (r - dedendum) * 0.6 * Math.cos(-0.12));
+        ctx.lineTo((r + addendum) * Math.sin(-0.10), (r + addendum) * Math.cos(-0.10));
+        ctx.lineTo((r + addendum) * Math.sin(0.10), (r + addendum) * Math.cos(0.10));
+        ctx.lineTo((r - dedendum) * 0.6 * Math.sin(0.12), (r - dedendum) * 0.6 * Math.cos(0.12));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -345,8 +343,6 @@ function drawMiterGear(ctx, r, numTeeth, color) {
     const toothAngle = (Math.PI * 2) / numTeeth;
     const addendum = r * 0.16;
     const dedendum = r * 0.24;
-    const toothWidth = toothAngle * 0.45; // slightly wider teeth for miter look
-    const rootTaper = 0.58;
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -354,12 +350,12 @@ function drawMiterGear(ctx, r, numTeeth, color) {
         ctx.save();
         ctx.rotate(rot);
 
-        // Shorter, wider teeth typical of miter gears (tapered)
+        // Shorter, wider teeth typical of miter gears
         ctx.beginPath();
-        ctx.moveTo((r - dedendum) * rootTaper * Math.sin(-toothWidth/2), (r - dedendum) * rootTaper * Math.cos(-toothWidth/2));
-        ctx.lineTo((r + addendum) * Math.sin(-toothWidth * 0.06), (r + addendum) * Math.cos(-toothWidth * 0.06));
-        ctx.lineTo((r + addendum) * Math.sin(toothWidth * 0.06), (r + addendum) * Math.cos(toothWidth * 0.06));
-        ctx.lineTo((r - dedendum) * rootTaper * Math.sin(toothWidth/2), (r - dedendum) * rootTaper * Math.cos(toothWidth/2));
+        ctx.moveTo((r - dedendum) * 0.55 * Math.sin(-0.14), (r - dedendum) * 0.55 * Math.cos(-0.14));
+        ctx.lineTo((r + addendum) * Math.sin(-0.12), (r + addendum) * Math.cos(-0.12));
+        ctx.lineTo((r + addendum) * Math.sin(0.12), (r + addendum) * Math.cos(0.12));
+        ctx.lineTo((r - dedendum) * 0.55 * Math.sin(0.14), (r - dedendum) * 0.55 * Math.cos(0.14));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -773,7 +769,6 @@ class Clockwork {
                 key: gdata.key,
                 label: gdata.key.substring(0, 6),
                 layer: gdata.layer,
-                type: gdata.type || "spur",
                 beta: gdata.beta || 0,
                 angle: gdata.beta || 0,
                 omega: 0,
