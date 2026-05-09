@@ -904,6 +904,24 @@ class Clockwork {
         ctx.lineWidth = 2;
         ctx.strokeRect(120, 60, 780, 600);
 
+        // When the clock face is hidden, draw the central dark gear *early*
+        // so it renders behind all the mechanism gears and connections.
+        // It remains visible as a subtle background element but never covers
+        // important information.
+        if (!this.showClockFace) {
+            const centralGear = {
+                x: this.clockX,
+                y: this.clockY,
+                radius: this.clockR * 0.55,
+                numTeeth: 22,
+                angle: this.simulationTime * 0.6,
+                layer: 1,
+                label: null,
+                type: "helical"
+            };
+            this.drawDarkBrownClockGear(ctx, centralGear);
+        }
+
         // Draw gears by layer
         for (let layer = 0; layer < 3; layer++) {
             if (!this.layerVisible[layer]) continue;
@@ -951,19 +969,6 @@ class Clockwork {
 
             // 3. Draw clock hands on top
             drawClockHands(ctx, this.clockX, this.clockY, this.clockR, this.simulationTime, this.clockRatio);
-        } else {
-            // Clock face hidden — still show the central gear (dark brown)
-            const centralGear = {
-                x: this.clockX,
-                y: this.clockY,
-                radius: this.clockR * 0.55,
-                numTeeth: 22,
-                angle: this.simulationTime * 0.6,
-                layer: 1,
-                label: null,
-                type: "helical"
-            };
-            this.drawDarkBrownClockGear(ctx, centralGear);
         }
 
         // Small title inside canvas area
@@ -1014,7 +1019,7 @@ Overall, when methods align and drive one another effectively, the result goes f
                 <button onclick="closeDesignerNoteModal()" style="background: #5088d0; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600;">Got it — Start Exploring</button>
             </div>
         </div>
-    </div>`; 
+    </div>`;
 
     const modalContainer = document.createElement('div');
     modalContainer.innerHTML = modalHTML;
