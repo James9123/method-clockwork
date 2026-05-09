@@ -410,26 +410,26 @@ function drawScrewGear(ctx, r, numTeeth, color) {
 }
 
 function drawInternalGear(ctx, r, numTeeth, color) {
-    // Internal gear: teeth on the inside of a ring (for planetary-like visuals)
-    const outerR = r * 1.18;
-    const innerR = r * 0.72;
+    // Internal gear: teeth cut on the INSIDE of a thick ring, pointing toward the center.
+    const outerR = r * 1.22;      // Outer edge of the ring body
+    const ringInnerR = r * 0.78;  // Inner wall of the ring (where teeth start)
+    const toothTipR = r * 0.58;   // How far the teeth extend inward (toward center)
 
-    // Outer ring (filled)
+    // 1. Draw the solid ring body (outer circle)
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.fill();
 
-    // Inner cutout (hole where pinion would sit)
+    // 2. Cut out the central hole (light background)
     ctx.fillStyle = "#f0f2f8";
     ctx.beginPath();
-    ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringInnerR - 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Internal teeth pointing inward
+    // 3. Draw the inward-pointing teeth (on top of the ring)
     const toothAngle = (Math.PI * 2) / numTeeth;
-    const toothDepth = (outerR - innerR) * 0.6;
-    const toothWidth = toothAngle * 0.42;
+    const toothWidth = toothAngle * 0.38; // Slightly narrower teeth for internal mesh look
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -438,21 +438,31 @@ function drawInternalGear(ctx, r, numTeeth, color) {
         ctx.rotate(rot);
 
         ctx.beginPath();
-        // Tooth pointing inward
-        ctx.moveTo((innerR + toothDepth) * Math.sin(-toothWidth/2), (innerR + toothDepth) * Math.cos(-toothWidth/2));
-        ctx.lineTo(innerR * Math.sin(-toothWidth * 0.3), innerR * Math.cos(-toothWidth * 0.3));
-        ctx.lineTo(innerR * Math.sin(toothWidth * 0.3), innerR * Math.cos(toothWidth * 0.3));
-        ctx.lineTo((innerR + toothDepth) * Math.sin(toothWidth/2), (innerR + toothDepth) * Math.cos(toothWidth/2));
+        // Base of tooth (attached to inner wall of ring)
+        ctx.moveTo(ringInnerR * Math.sin(-toothWidth / 2), ringInnerR * Math.cos(-toothWidth / 2));
+        // Left flank going inward
+        ctx.lineTo(toothTipR * Math.sin(-toothWidth * 0.22), toothTipR * Math.cos(-toothWidth * 0.22));
+        // Tip of tooth
+        ctx.lineTo(toothTipR * Math.sin( toothWidth * 0.22), toothTipR * Math.cos( toothWidth * 0.22));
+        // Right flank back to base
+        ctx.lineTo(ringInnerR * Math.sin( toothWidth / 2), ringInnerR * Math.cos( toothWidth / 2));
         ctx.closePath();
         ctx.fill();
         ctx.restore();
     }
 
-    // Subtle outer rim
-    ctx.strokeStyle = "rgba(0,0,0,0.2)";
-    ctx.lineWidth = 2;
+    // 4. Subtle outer rim highlight
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Optional inner rim (clean edge where teeth meet the ring wall)
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, ringInnerR, 0, Math.PI * 2);
     ctx.stroke();
 }
 
@@ -1007,4 +1017,49 @@ window.addEventListener("load", () => {
     window.clockwork = cw;
 
     console.log("%c[Clockwork] Browser version initialized successfully", "color:#888");
+
+    // ==================== ONE-TIME WELCOME POPUP ====================
+    const modal = document.getElementById('welcomeModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const gotItBtn = document.getElementById('gotItBtn');
+
+    function showWelcomeModal() {
+        if (modal && !localStorage.getItem('designMethodsClockworkWelcomeShown')) {
+            // Slight delay so the visualization initializes visibly first
+            setTimeout(() => {
+                modal.style.display = 'flex';
+            }, 650);
+        }
+    }
+
+    function closeWelcomeModal() {
+        if (modal) modal.style.display = 'none';
+        localStorage.setItem('designMethodsClockworkWelcomeShown', 'true');
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeWelcomeModal);
+    }
+    if (gotItBtn) {
+        gotItBtn.addEventListener('click', closeWelcomeModal);
+    }
+    // Close when clicking the dark overlay background
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeWelcomeModal();
+            }
+        });
+    }
+
+    // Wire up the "Reopen Welcome Guide" button under the STATUS panel (always allows re-opening)
+    const showWelcomeBtn = document.getElementById('showWelcomeBtn');
+    if (showWelcomeBtn && modal) {
+        showWelcomeBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+    }
+
+    // Trigger the one-time popup (only shows automatically on first visit)
+    showWelcomeModal();
 });
