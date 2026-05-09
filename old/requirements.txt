@@ -1,0 +1,5 @@
+# Design Methods Clockwork v3
+# Run with: pip install -r requirements.txt
+
+pygame>=2.5.0
+Pillow>=10.0.0          # Optional but recommended for gear sprite sheet support

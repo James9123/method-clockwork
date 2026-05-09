@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Methods Clockwork</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>DESIGN METHODS CLOCKWORK</h1>
+            <p class="subtitle">Interactive visualization of the design process • Kinematic gear simulation</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <aside class="sidebar left">
+                <div class="panel">
+                    <h3>PRESETS</h3>
+                    <div class="preset-buttons">
+                        <button data-preset="Discovery Mode">1. Discovery Mode</button>
+                        <button data-preset="Framing Mode">2. Framing Mode</button>
+                        <button data-preset="Ideation Mode">3. Ideation Mode</button>
+                        <button data-preset="Evaluation Mode">4. Evaluation Mode</button>
+                        <button data-preset="Integrated Cycle">5. Integrated Cycle</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>LAYERS</h3>
+                    <div class="layer-controls">
+                        <label>
+                            <input type="checkbox" id="layer0" checked>
+                            <span class="layer-dot layer-0"></span> Layer 1 (Back)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer1" checked>
+                            <span class="layer-dot layer-1"></span> Layer 2 (Mid)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer2" checked>
+                            <span class="layer-dot layer-2"></span> Layer 3 (Front)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>CONTROLS</h3>
+                    <div class="control-row">
+                        <button id="pauseBtn">⏸ Pause</button>
+                        <button id="resetBtn">⟲ Reset</button>
+                    </div>
+                    
+                    <div class="speed-control">
+                        <label>Speed</label>
+                        <div class="speed-buttons">
+                            <button id="speedDown">−</button>
+                            <span id="speedValue">1.0×</span>
+                            <button id="speedUp">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hint">Scroll on canvas to change speed • Click gear to inspect</div>
+                </div>
+            </aside>
+
+            <!-- Canvas Area -->
+            <div class="canvas-wrapper">
+                <canvas id="canvas" width="1000" height="720"></canvas>
+                <div id="tooltip" class="tooltip"></div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <aside class="sidebar right">
+                <div class="panel info-panel">
+                    <h3>METHOD INSIGHT</h3>
+                    <div id="infoContent">
+                        <p class="placeholder">Click any gear to see its role in the design process.</p>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>STATUS</h3>
+                    <div id="status" class="status running">RUNNING</div>
+                    <div class="hint">Press <strong>Space</strong> or <strong>P</strong> to pause</div>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>Port of the original Pygame simulation • All methods from real design research projects</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
