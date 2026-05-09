@@ -886,7 +886,7 @@ class Clockwork {
             <h4>${m.full}</h4>
             <div class="phase">${m.phase}</div>
             <div class="desc">${m.desc}</div>
-            <div class="insight-label">From your reflection:</div>
+            <div class="insight-label">From reflection:</div>
             <div class="insight">${m.insight}</div>
         `;
     }
