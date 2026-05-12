@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Methods Clockwork</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>DESIGN METHODS CLOCKWORK</h1>
+            <p class="subtitle">Interactive visualization of the design process • Kinematic gear simulation</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <aside class="sidebar left">
+                <div class="panel">
+                    <h3>PRESETS</h3>
+                    <div class="preset-buttons">
+                        <button data-preset="Opportunity Recognition">1. Opportunity Recognition</button>
+                        <button data-preset="Problem Framing">2. Problem Framing</button>
+                        <button data-preset="Solution Concepting">3. Solution Concepting</button>
+                        <button data-preset="Specification as Hypothesis">4. Specification as Hypothesis</button>
+                        <button data-preset="Concept Evaluation">5. Concept Evaluation</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>LAYERS</h3>
+                    <div class="layer-controls">
+                        <label>
+                            <input type="checkbox" id="layer0" checked>
+                            <span class="layer-dot layer-0"></span> Layer 1 (Back)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer1" checked>
+                            <span class="layer-dot layer-1"></span> Layer 2 (Mid)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer2" checked>
+                            <span class="layer-dot layer-2"></span> Layer 3 (Front)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>CONTROLS</h3>
+                    <div class="control-row">
+                        <button id="pauseBtn">⏸ Pause</button>
+                        <button id="resetBtn">⟲ Reset</button>
+                    </div>
+                    
+                    <div class="speed-control">
+                        <label>Speed</label>
+                        <div class="speed-buttons">
+                            <button id="speedDown">−</button>
+                            <span id="speedValue">1.0×</span>
+                            <button id="speedUp">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hint">Scroll on canvas to change speed • Click gear to inspect</div>
+
+                    <div class="clock-toggle" style="margin-top: 14px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="clockToggle" checked>
+                            <span>Show Clock Face</span>
+                        </label>
+                        <div class="hint" style="margin-top: 4px;">Central gear always visible</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Canvas Area -->
+            <div class="canvas-wrapper">
+                <canvas id="canvas" width="1000" height="720"></canvas>
+                <div id="tooltip" class="tooltip"></div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <aside class="sidebar right">
+                <div class="panel info-panel">
+                    <h3>METHOD INSIGHT</h3>
+                    <div id="infoContent">
+                        <p class="placeholder">Click any gear to see its role in the design process.</p>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>STATUS</h3>
+                    <div id="status" class="status running">RUNNING</div>
+                    <div class="hint">Press <strong>Space</strong> or <strong>P</strong> to pause</div>
+                    <button id="showNoteBtn" style="margin-top: 12px; width: 100%; padding: 9px 14px; background: white; border: 1px solid #d0d5df; border-radius: 6px; font-size: 13.5px; color: #444; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        📖 Designer's Note
+                    </button>
+
+                </div>
+
+                <!-- Connection Legend (Method Relations) -->
+                <div class="panel">
+                    <h3>CONNECTIONS</h3>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="legend-line drive"></span>
+                            <span><strong>Forward</strong> — Method directly drives or feeds the next</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-line feedback"></span>
+                            <span><strong>Feedback / Iterate</strong> — Method reflects back to refine earlier step</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-line synthesis"></span>
+                            <span><strong>Synthesis → Outcome</strong> — Methods converge into final validated result (Clock)</span>
+                        </div>
+                    </div>
+                    <div class="legend-note">
+                        Lines show how methods relate and influence each other across the design process.
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>Port of the original Pygame simulation • All methods from real design research projects</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
