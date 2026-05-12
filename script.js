@@ -769,6 +769,7 @@ class Clockwork {
                 key: gdata.key,
                 label: gdata.key.substring(0, 6),
                 layer: gdata.layer,
+                type: gdata.type || "spur",
                 beta: gdata.beta || 0,
                 angle: gdata.beta || 0,
                 omega: 0,
