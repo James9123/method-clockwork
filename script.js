@@ -407,25 +407,26 @@ function drawScrewGear(ctx, r, numTeeth, color) {
 
 function drawInternalGear(ctx, r, numTeeth, color) {
     // Internal gear: teeth on the inside of a ring (for planetary-like visuals)
-    const outerR = r * 1.18;
-    const innerR = r * 0.72;
+    const outerR = r * 1.16;
+    const innerR = r * 0.76;   // cutout radius
 
-    // Outer ring (filled)
+    // 1. Outer ring (filled)
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.fill();
 
-    // Inner cutout (hole where pinion would sit)
+    // 2. Cutout (hole) rendered first
     ctx.fillStyle = "#f0f2f8";
     ctx.beginPath();
     ctx.arc(0, 0, innerR, 0, Math.PI * 2);
     ctx.fill();
 
-    // Internal teeth pointing inward
+    // 3. Teeth drawn AFTER cutout — base exactly at cutout radius (innerR), pointing inward
     const toothAngle = (Math.PI * 2) / numTeeth;
-    const toothDepth = (outerR - innerR) * 0.6;
-    const toothWidth = toothAngle * 0.42;
+    const toothDepth = r * 0.18;           // deeper teeth
+    const toothWidth = toothAngle * 0.76;  // minimal gaps
+    const tipTaper = 0.15;
 
     ctx.fillStyle = color;
     for (let i = 0; i < numTeeth; i++) {
@@ -433,20 +434,27 @@ function drawInternalGear(ctx, r, numTeeth, color) {
         ctx.save();
         ctx.rotate(rot);
 
+        const baseR = innerR;                    // teeth base exactly at cutout radius
+        const tipR  = innerR - toothDepth;       // tips point inward
+
         ctx.beginPath();
-        // Tooth pointing inward
-        ctx.moveTo((innerR + toothDepth) * Math.sin(-toothWidth/2), (innerR + toothDepth) * Math.cos(-toothWidth/2));
-        ctx.lineTo(innerR * Math.sin(-toothWidth * 0.3), innerR * Math.cos(-toothWidth * 0.3));
-        ctx.lineTo(innerR * Math.sin(toothWidth * 0.3), innerR * Math.cos(toothWidth * 0.3));
-        ctx.lineTo((innerR + toothDepth) * Math.sin(toothWidth/2), (innerR + toothDepth) * Math.cos(toothWidth/2));
+        ctx.moveTo(baseR * Math.sin(-toothWidth/2), baseR * Math.cos(-toothWidth/2));
+        ctx.lineTo(tipR  * Math.sin(-toothWidth * tipTaper), tipR * Math.cos(-toothWidth * tipTaper));
+        ctx.lineTo(tipR  * Math.sin( toothWidth * tipTaper), tipR * Math.cos( toothWidth * tipTaper));
+        ctx.lineTo(baseR * Math.sin( toothWidth/2), baseR * Math.cos( toothWidth/2));
         ctx.closePath();
         ctx.fill();
+
+        // Outline
+        ctx.strokeStyle = "rgba(255,255,255,0.22)";
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
         ctx.restore();
     }
 
     // Subtle outer rim
-    ctx.strokeStyle = "rgba(0,0,0,0.2)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.lineWidth = 2.0;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.stroke();
