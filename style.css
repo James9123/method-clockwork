@@ -299,6 +299,51 @@ footer {
     font-size: 13px;
 }
 
+/* Connection Legend Styles (copied & adapted from obsolete branch) */
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    font-size: 12.2px;
+    margin-top: 4px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.legend-line {
+    width: 26px;
+    height: 3.5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.legend-line.drive { background: #5088d0; }
+.legend-line.feedback { 
+    background: #e07a5f; 
+    border: 1.5px dashed #e07a5f; 
+    height: 2px; 
+    box-shadow: none;
+}
+.legend-line.synthesis { 
+    background: linear-gradient(to right, #81b29a, #a3c9b0); 
+    height: 4px; 
+}
+
+.legend-note {
+    font-size: 10.5px;
+    color: #777;
+    line-height: 1.35;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #d0d5df;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .main-content {

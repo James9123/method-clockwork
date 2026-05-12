@@ -48,6 +48,8 @@ const PRESETS = {
             {x:430, y:240, radius:40, numTeeth:15, key:"STAKE",   layer:1, type:"miter"},
         ],
         connections: [[0,1],[1,2],[0,3],[2,4]],
+        connectionTypes: ["drive", "drive", "synthesis", "drive"],
+        clockConnections: [3, 4],  // OPPMAP & STAKE → final opportunity synthesis feeds the clock
         driverIdx: 0,
         clockRatio: 0.45
     },
@@ -61,6 +63,8 @@ const PRESETS = {
             {x:500, y:330, radius:43, numTeeth:16, key:"BOUND",  layer:1, type:"spur"},
         ],
         connections: [[0,1],[1,2],[1,3],[2,4],[3,4]],
+        connectionTypes: ["drive", "drive", "synthesis", "drive", "feedback"],
+        clockConnections: [4],  // BOUND finalizes scope → clock
         driverIdx: 1,
         clockRatio: 0.75
     },
@@ -77,6 +81,8 @@ const PRESETS = {
             {x:590, y:300, radius:43, numTeeth:16, key:"PROTO",    layer:1, type:"bevel"},
         ],
         connections: [[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,7],[6,7]],
+        connectionTypes: ["drive", "drive", "synthesis", "synthesis", "drive", "drive", "synthesis", "drive", "feedback"],
+        clockConnections: [7],  // PROTO (prototyping) → clock as tangible output
         driverIdx: 0,
         clockRatio: 1.25
     },
@@ -95,6 +101,8 @@ const PRESETS = {
             {x:660, y:395, radius:40, numTeeth:15, key:"TRADE",    layer:1, type:"bevel"},
         ],
         connections: [[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,7],[6,8],[7,9],[8,9]],
+        connectionTypes: ["drive", "drive", "drive", "synthesis", "drive", "synthesis", "drive", "drive", "drive", "synthesis", "feedback"],
+        clockConnections: [8, 9],  // TBT & TRADE → final validation feeds clock
         driverIdx: 0,
         clockRatio: 0.7
     },
@@ -112,6 +120,8 @@ const PRESETS = {
             {x:650, y:340, radius:36, numTeeth:14, key:"DECREC",   layer:1, type:"spur"},
         ],
         connections: [[0,1],[1,2],[2,3],[2,4],[3,5],[4,6],[5,7],[6,7],[7,8]],
+        connectionTypes: ["drive", "drive", "drive", "synthesis", "drive", "drive", "synthesis", "feedback", "synthesis"],
+        clockConnections: [8],  // DECREC (Decision Recommendation) → ultimate output to clock
         driverIdx: 0,
         clockRatio: 0.9
     }
@@ -547,6 +557,8 @@ class Clockwork {
         this.ctx = canvas.getContext("2d", { alpha: true });
         this.gears = [];
         this.connections = [];
+        this.connectionTypes = [];
+        this.clockConnections = [];
         this.driverIdx = 0;
         this.baseOmega = 0.85;
         this.speedMult = 1.0;
@@ -786,6 +798,10 @@ class Clockwork {
         }
 
         this.connections = p.connections;
+        this.connectionTypes = (p.connectionTypes && p.connectionTypes.length === p.connections.length) 
+            ? p.connectionTypes 
+            : p.connections.map(() => "drive");
+        this.clockConnections = p.clockConnections || [];
         this.driverIdx = p.driverIdx;
         this.clockRatio = p.clockRatio || 1.0;
         this.currentPreset = key;
@@ -943,18 +959,56 @@ class Clockwork {
             }
         }
 
-        // Connection lines
-        ctx.strokeStyle = "#9aa0ad";
-        ctx.lineWidth = 1.5;
-        for (const [a, b] of this.connections) {
+        // Connection lines (color-coded by relational type from Connection Key)
+        const connColors = {
+            "drive": "#5088d0",      // blue - forward drive
+            "feedback": "#e07a5f",   // coral - loops back
+            "synthesis": "#81b29a"   // green gradient feel (solid here)
+        };
+        ctx.lineWidth = 1.8;
+        for (let i = 0; i < this.connections.length; i++) {
+            const [a, b] = this.connections[i];
             const g1 = this.gears[a];
             const g2 = this.gears[b];
             if (g1.visible && g2.visible) {
+                const type = this.connectionTypes[i] || "drive";
+                ctx.strokeStyle = connColors[type] || "#9aa0ad";
+                if (type === "feedback") {
+                    ctx.setLineDash([5, 3]);
+                } else {
+                    ctx.setLineDash([]);
+                }
                 ctx.beginPath();
                 ctx.moveTo(g1.x, g1.y);
                 ctx.lineTo(g2.x, g2.y);
                 ctx.stroke();
             }
+        }
+        ctx.setLineDash([]);
+
+        // Clock output connections (purely visual links from final method steps to central clock)
+        // These represent how the phase culminates in the "tick" of validated progress
+        if (this.clockConnections && this.clockConnections.length > 0) {
+            ctx.strokeStyle = "#c37337";
+            ctx.lineWidth = 2.2;
+            ctx.setLineDash([7, 4]);
+            for (const idx of this.clockConnections) {
+                if (idx < this.gears.length) {
+                    const g = this.gears[idx];
+                    if (g && g.visible) {
+                        ctx.beginPath();
+                        ctx.moveTo(g.x, g.y);
+                        ctx.lineTo(this.clockX, this.clockY);
+                        ctx.stroke();
+                        // Small accent dot at clock end
+                        ctx.fillStyle = "#c37337";
+                        ctx.beginPath();
+                        ctx.arc(this.clockX, this.clockY, 4.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            ctx.setLineDash([]);
         }
 
         // === Central Clock Area ===
